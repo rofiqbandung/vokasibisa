@@ -10,19 +10,16 @@
 		}
 
 		function lunch_start_time($data, $emp_user_id, $date){
-			
 			$this->db->set($data);
 			$this->db->where('emp_user_id', $emp_user_id)->where('insert_time', $date)->update('collection');
 		}
 
 		function lunch_end_time($data, $emp_user_id, $date){
-			
 			$this->db->set($data);
 			$this->db->where('emp_user_id', $emp_user_id)->where('insert_time', $date)->update('collection');
 		}
 
 		function end_time($data, $emp_user_id, $date){
-			
 			$this->db->set($data);
 			$this->db->where('emp_user_id', $emp_user_id)->where('insert_time', $date)->update('collection');
 		}
@@ -32,9 +29,9 @@
 			$this->db->insert('part_time_attendance');
 		}
 
-		function part_time_signin($data, $emp_user_id, $date){
+		function part_time_signin($attendance_id ,$data, $emp_user_id, $date){
 			$this->db->set($data);
-			$this->db->where('emp_user_id', $emp_user_id)->where('insert_date', $date)->update('part_time_attendance');
+			$this->db->where('attendance_id', $attendance_id)->where('emp_user_id', $emp_user_id)->where('insert_date', $date)->update('part_time_attendance');
 		}
 
 		function all_data()
@@ -95,8 +92,6 @@
 
 			$collections = $this->db->get();
 
-			// $collections = $this->db->get('collection');
-
 			return $collections;
 		}
 
@@ -116,15 +111,14 @@
 			return $collections;
 		}
 
-		function part_time_attendance_date($user_id)
+		function check_part_time_attendance_today($user_id, $date)
 		{
 			$this->db->select('*');
 			$this->db->from('part_time_attendance');
 			$this->db->where('emp_user_id', $user_id);
+			$this->db->where('insert_date', $date);
 
 			$short_break = $this->db->get();
-
-			// $collections = $this->db->get('collection');
 
 			return $short_break;
 		}
@@ -150,21 +144,16 @@
 
 			$check = $this->db->get();
 
-			// $check = $this->db->get('collection');
-
-			return $check->row();;
+			return $check->row();
 		}
 
-		function check_part_time_attendance($user_id, $date){
+		function check_part_time_attendance($user_id){
 			$this->db->select('*');
 			$this->db->from('part_time_attendance');
 			$this->db->where('emp_user_id', $user_id);
-			// $this->db->where('insert_date', $date);
 			$this->db->order_by('attendance_id',"desc")->limit(1);
 
 			$check = $this->db->get();
-
-			// $check = $this->db->get('collection');
 
 			return $check;
 		}

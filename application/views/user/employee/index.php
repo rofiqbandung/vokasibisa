@@ -15,14 +15,10 @@
               <br>
           </div>
 
-          <div class="text-danger">
-            <?php
-              echo $this->session->message;
-            ?>
-          </div>
+            <?php echo $this->session->message; ?>
 
           <div class="panel-body">
-            <form action="<?php echo base_url('employee/login')?>" method="post" accept-charset="UTF-8" role="form">
+            <form action="<?php echo base_url('employee/login'); ?>" method="post" accept-charset="UTF-8" role="form">
               <fieldset>
                 <div class="form-group">
                   <input class="form-control" placeholder="User Id" name="user_id" type="text" value="<?php echo set_value('user_id')?>">
@@ -36,7 +32,7 @@
                 <input class="btn btn-lg btn-success btn-block" type="submit" value="Login">
                 <br>
               </fieldset>
-              </form>
+            </form>
           </div>
 
         </div>

@@ -9,14 +9,13 @@
   
   <!-- /.control-sidebar -->
   <!-- Add the sidebar's background. This div must be placed
-       immediately after the control sidebar -->
+      immediately after the control sidebar -->
   <div class="control-sidebar-bg"></div>
 </div>
 <!-- ./wrapper -->
 
- 
-  
 
+  
 <!-- jQuery 3 -->
 <script src="<?= base_url('assets/bower_components/jquery/dist/jquery.min.js') ?>"></script>
 <!-- jQuery UI 1.11.4 -->

@@ -5,70 +5,150 @@
 	class Employee extends My_Controller
 	{
 		public function index(){
-			
 			if ($this->session->employee_id) {
-
 				$this->dashboard();
-
 			}else{
 				$this->load->view('user/employee/index');
 			}
-
 		}
 
 		public function login(){
-			
-			 $this->load->library('form_validation');
+			if ($this->session->employee_id) return redirect('employee/dashboard');
 
-			 $this->form_validation->set_rules('user_id', 'User Id', 'required');
-			 $this->form_validation->set_rules('password', 'Password', 'required|max_length[12]|min_length[5]');
+			$this->load->library('form_validation');
 
-			 if ($this->form_validation->run()) {
-			 	$emp_user_id = $this->input->post('user_id');
-			 	$password = md5($this->input->post('password'));
+			$this->form_validation->set_rules('user_id', 'User Id', 'required');
+			$this->form_validation->set_rules('password', 'Password', 'required|max_length[12]|min_length[5]');
 
-			 	$this->load->model('EmployeeModel');
-			 	$data = $this->EmployeeModel->employee_login($emp_user_id, $password);
+			if ($this->form_validation->run()) {
+				$emp_user_id = $this->input->post('user_id');
+				$password = md5($this->input->post('password'));
+				
+				$this->load->model('EmployeeModel');
+				$data = $this->EmployeeModel->employee_login($emp_user_id, $password);
 
-			 	if ($data) {
-			 		$this->session->set_userdata('employee_id', $data->row()->employee_id);
-			 		$this->session->set_userdata('emp_user_id', $data->row()->user_id);
-			 		$this->session->set_userdata('employee_name', $data->row()->employee_name);
-			 		$this->session->set_userdata('employee_image', $data->row()->employee_image);
+				if ($data) {
+					$this->session->set_userdata('employee_id', $data->row()->employee_id);
+					$this->session->set_userdata('emp_user_id', $data->row()->user_id);
+					$this->session->set_userdata('employee_name', $data->row()->employee_name);
+					$this->session->set_userdata('employee_image', $data->row()->employee_image);
+					$this->session->set_userdata('company_id', $data->row()->company_id);
+					
+					return redirect('employee/dashboard');
 
-			 		// $this->load->view('user/employee/dashboard', $employee_name, $employee_image);
-			 		$this->dashboard();
-
-			 	}else{
-			 		$this->session->set_flashdata('message', 'Email or Password is not match');
-			 		$this->load->view('user/employee/index');
-			 	}
-
-			 }else{
-			 	$this->load->view('user/employee/index');
-			 }
+				}else{
+					$this->session->set_flashdata('message', '<div class="alert alert-danger alert-dismissible fade show" role="alert">User Id or Password is not match<button class="close" type="button" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>');
+					$this->load->view('user/employee/index');
+				}
+				
+			}else{
+				// return redirect('employee');
+				$this->load->view('user/employee/index');
+			}
 		}
 
 		public function dashboard(){
-	 		$this->auth();
+			$this->auth();
+			date_default_timezone_set('Asia/Dhaka');
 
-	 		$employee_id = $this->session->employee_id;
-	 		$today = date('Y-m-d');
-	 		$front_day = date('Y-m-d',strtotime('+1440 minutes', strtotime($today)));
+			$employee_id = $this->session->employee_id;
+			$today = date('Y-m-d');
+			$front_day = date('Y-m-d',strtotime('+1440 minutes', strtotime($today)));
+			
+			$this->load->model('HolidayModel');
+			$data['holiday'] = $this->HolidayModel->holiday_range_tomorrow($front_day);
 
+			$this->load->view('user/employee/dashboard', $data);	
 
-	 		$this->load->model('HolidayModel');
-	 		$data['holiday'] = $this->HolidayModel->holiday_range_tomorrow($front_day);
+		}
 
-	 		$this->load->view('user/employee/dashboard', $data);	
+		public function logout(){
+			$this->session->unset_userdata('employee_id');
+			$this->session->unset_userdata('emp_user_id');
+			$this->session->unset_userdata('employee_name');
+			$this->session->unset_userdata('employee_image');
+			$this->session->unset_userdata('company_id');
+			$this->session->set_flashdata('message', '<div class="alert alert-success alert-dismissible fade show" role="alert">You have been logged out<button class="close" type="button" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>');
+			return redirect('employee');
+		}
 
-	 	}
+		public function profile() {
+			$this->auth();
 
- 		public function logout(){
- 			$this->session->unset_userdata('employee_id');
- 			return redirect('employee/');
- 		}
+			$id = $this->session->employee_id;
 
+			$this->load->model('EmployeeModel');
+			$data['employee'] = $this->EmployeeModel->fatch_single_data($id)->row();
+
+			$this->load->view('user/employee/profile', $data);
+		}
+
+		public function edit_profile() {
+			$this->auth();
+
+			$id = $this->session->employee_id;
+			$this->load->model('EmployeeModel');
+			$data['designations'] = $this->EmployeeModel->all_employee_designation()->result_array();
+			$data['employee'] = $this->EmployeeModel->fatch_single_data($id)->row();
+
+			$this->form_validation->set_rules('name', 'Name', 'required');
+			// $this->form_validation->set_rules('email', 'Email', 'required|valid_email');
+			$this->form_validation->set_rules('phone', 'Phone Number', 'required|numeric');
+			$this->form_validation->set_rules('designation', 'Designations', 'required|numeric');
+
+			if ($this->form_validation->run() == false) {
+				$this->load->view('user/employee/edit_profile', $data);
+			} else {
+				$name = $this->input->post('name');
+				$phone = $this->input->post('phone');
+				$designation = $this->input->post('designation');
+				$img = $_FILES['image']['name'];
+
+				// cek jika ada image
+				if ($img) {
+					$config['upload_path'] = './upload/';
+					$config['allowed_types'] = 'jpg|png';
+					$config['max_size']     = '2048';
+
+					$this->load->library('upload', $config);
+
+					// upload image
+					if ($this->upload->do_upload('image')) {
+
+						// $old_img = $data['employee']->employee_image;
+						// // hapus image lama yang bukan default.jpg
+						// if ($old_img != 'default.jpg') {
+						// 	unlink(FCPATH.'upload/'.$old_img);
+						// }
+
+						$new_img = $this->upload->data('file_name');
+						$data = [
+							'employee_name' => $name,
+							'employee_phone' => $phone,
+							'employee_image' => $new_img,
+							'employee_designation' => $designation
+						];
+					} else {
+						$error = $this->upload->display_errors();
+						$this->session->set_flashdata('message', '<div class="alert alert-danger" role="alert">'.$error.'</div>');
+						return redirect('employee/edit_profile');
+					}
+
+				} else {
+					$data = [
+						'employee_name' => $name,
+						'employee_phone' => $phone,
+						'employee_designation' => $designation
+					];
+				}
+
+				$this->EmployeeModel->update_employee($id, $data);
+				$this->session->set_flashdata('message', '<div class="alert alert-success" role="alert">Your profile has been updated</div>');
+				return redirect('employee/profile');
+			}
+			
+
+		}
 
 		public function attendance_report_today(){
 			$this->auth();
@@ -183,9 +263,8 @@
 	        	
         	}
 
-        	
-	        $this->email->subject('Work Report ('.date('Y-m-d').')');
-	        $this->email->message($employee_message);
+			$this->email->subject('Work Report ('.date('Y-m-d').')');
+			$this->email->message($employee_message);
 
 	        // echo "hello";
 	        // echo exit();
@@ -224,7 +303,6 @@
 				$day = $a - $b;
 
                 $total_day = ($day/(60*60))/24;
-	                
 
 				$data = array(
 					"app_type" => $this->input->post('app_type'),
@@ -246,12 +324,7 @@
 				
 			}else{
 				$this->load->view('user/employee/leave/apply_leave');
-
 			}	
-
-			
-
-
 			$this->load->view('user/employee/leave/apply_leave');
 		}
 
@@ -323,7 +396,6 @@
 			if ($data) {
 				return redirect('employee/confirmation_leave/'.$this->session->employee_id);
 			}
- 
 		}
 
 		public function disagree_application(){
@@ -344,27 +416,30 @@
 			if ($data) {
 				return redirect('employee/confirmation_leave');
 			}
- 
 		}
 
 
 		// Attendance
 
 		public function employee_attendance(){
-			// echo $this->session->emp_user_id;exit();
+			$this->auth();
+
+			date_default_timezone_set('Asia/Dhaka');
+
 			$user_id = $this->session->emp_user_id;
 			$today = date('Y-m-d');
-
+			
 			$this->load->model('CollectionModel');
-			$data['collections'] = $this->CollectionModel->single_employee_collection_data($user_id, $today);
-			$data['short_breaks'] = $this->CollectionModel->check_part_time_attendance($user_id, $today);
+			$data['collections'] = $this->CollectionModel->single_employee_collection_data($user_id, $today)->row();
+			$data['short_break'] = $this->CollectionModel->check_part_time_attendance($user_id)->row();
+			$data['short_break_today'] = $this->CollectionModel->check_part_time_attendance_today($user_id, $today)->result_array();
 
 			$this->load->view('user/employee/attendance/attendance', $data);
 		}
 
 		// public function office_signin(){
-		// 	// date_default_timezone_set('Asia/Dhaka');
-		// 	//     echo date('m d y - g : i : s a');
+		// 	date_default_timezone_set('Asia/Dhaka');
+		// 	    // echo date('m d y - g : i : s a');
 		// 	$this->load->model('EmployeeModel');
 		// 	$data['employees'] = $this->EmployeeModel->all_data();
 
@@ -408,25 +483,23 @@
 
 		public function attendance_store(){
 
-			$from = $this->uri->segment(3);
+			date_default_timezone_set('Asia/Dhaka');
+			$this->load->model('CollectionModel');
 
-			
+			$from = $this->uri->segment(3);
 			if ($from == 'start_time') {
 				
-				date_default_timezone_set('Asia/Dhaka');
-
 				$user_id = $this->session->emp_user_id;
 				$date = date('Y-m-d');
 
-				$this->load->model('CollectionModel');
 				$check = $this->CollectionModel->check_user_id($user_id, $date);
 				$this->load->library('user_agent');
 
 				if ($check == null) {
 					$data = array(
 						"emp_user_id" => $user_id,	
-						"start_time" => date('H:i:s'),	
-						"insert_time" => date('Y-m-d'),	
+						"start_time" => date('H:i:s'),
+						"insert_time" => date('Y-m-d'),
 						// "client_browser" => $this->agent->browser(),
 						// "browser_version" => $this->agent->version(),
 						// "client_os" => $this->agent->platform(),
@@ -434,24 +507,17 @@
 						// "client_ip" => $_SERVER['REMOTE_ADDR'],
 					);
 
-					// echo "<pre>";
-					// print_r($data); exit();
-
-					$this->load->model('CollectionModel');
 					$data['start_time'] = $this->CollectionModel->start_time_store($data);
-					$this->session->set_flashdata('message', 'Insert Successfully');
 
 					if ($data) {
-						// redirect('main/index', $data);
-						// $this->load->model('CollectionModel');
 						$employeeData = $this->CollectionModel->single_attendance_data($user_id);
 						$employee_name = $employeeData->row()->employee_name;
-						$employee_phone = $employeeData->row()->employee_phone;
+						// $employee_phone = $employeeData->row()->employee_phone;
 
 						$message = "( ".$employee_name." Start Office Time Now)";
-
 						// $this->sendMessage($employee_phone, $message);
 
+						$this->session->set_flashdata('message', 'Insert Successfully');
 						redirect('employee/employee_attendance');
 					}
 
@@ -460,20 +526,16 @@
 					redirect('employee/employee_attendance');
 				}
 
-			}elseif ( $from == 'lunch_start_time' ) {
+			}elseif ($from == 'lunch_start_time') {
 				
 				$user_id = $this->session->emp_user_id;
 				$date = date('Y-m-d');
 
-				$this->load->model('CollectionModel');
-
 				$check = $this->CollectionModel->check_user_id($user_id, $date)->lunch_start_time;
-				
 
 				if ($check) {
 					if ($check == "00:00:00") {
 
-						date_default_timezone_set('Asia/Dhaka');
 						$datetime = date('Y-m-d H:i:s');
 
 						$emp_user_id = $user_id;
@@ -485,19 +547,11 @@
 							"update_ip_address" => $this->input->ip_address(),
 						);
 
-						// echo "<pre>";
-						// print_r($data);
-						// exit();
-
 						$date = date("Y-m-d",strtotime($datetime));
 
-						$this->load->model('CollectionModel');
 						$this->CollectionModel->lunch_start_time($data, $emp_user_id, $date);
-						$this->session->set_flashdata('message', 'Update Successfully');
 						
 						if ($data) {
-							// redirect('main/index', $data);
-							// $this->load->model('CollectionModel');
 							$employeeData = $this->CollectionModel->single_attendance_data($user_id);
 							$employee_name = $employeeData->row()->employee_name;
 							$employee_phone = $employeeData->row()->employee_phone;
@@ -506,6 +560,7 @@
 
 							$this->sendMessage($employee_phone, $message);
 
+							$this->session->set_flashdata('message', 'Update Successfully');
 							redirect('employee/employee_attendance');
 						}
 
@@ -523,7 +578,6 @@
 				$user_id = $this->session->emp_user_id;
 				$date = date('Y-m-d');
 
-				$this->load->model('CollectionModel');
 				$check_lunch_start_time = $this->CollectionModel->check_user_id($user_id, $date)->lunch_start_time;
 
 				$check_lunch_end_time = $this->CollectionModel->check_user_id($user_id, $date)->lunch_end_time;
@@ -531,32 +585,23 @@
 				if ($check_lunch_start_time != "00:00:00") {
 					if ($check_lunch_end_time == "00:00:00") {
 
-						date_default_timezone_set('Asia/Dhaka');
 						$datetime = date('Y-m-d H:i:s');
 
 						$emp_user_id = $this->session->emp_user_id;
 
 						$data = array(
 							"emp_user_id" => $this->session->emp_user_id,	
-							"lunch_end_time" => date('H:i:s'),	
-							"update_time" => date('Y-m-d H:i:s'),	
+							"lunch_end_time" => date('H:i:s'),
+							"update_time" => date('Y-m-d H:i:s'),
 							"update_ip_address" => $this->input->ip_address(),
-
 						);
-
-						// echo "<pre>";
-						// print_r($data);
-						// exit();
 
 						$date = date("Y-m-d",strtotime($datetime));
 
-						$this->load->model('CollectionModel');
+						// $this->load->model('CollectionModel');
 						$this->CollectionModel->lunch_end_time($data, $emp_user_id, $date);
-						$this->session->set_flashdata('message', 'Update Successfully');
 						
 						if ($data) {
-							// redirect('main/index', $data);
-							// $this->load->model('CollectionModel');
 							$employeeData = $this->CollectionModel->single_attendance_data($user_id);
 							$employee_name = $employeeData->row()->employee_name;
 							$employee_phone = $employeeData->row()->employee_phone;
@@ -568,7 +613,8 @@
 							// $this->sendMessage($employee_phone, $message);
 
 							// Send SMS End
-
+						
+							$this->session->set_flashdata('message', 'Update Successfully');
 							redirect('employee/employee_attendance');
 						}
 
@@ -586,12 +632,10 @@
 				$user_id = $this->session->emp_user_id;
 				$date = date('Y-m-d');
 
-				$this->load->model('CollectionModel');
 				$check_end_time = $this->CollectionModel->check_user_id($user_id, $date)->end_time;
 
 				if ($check_end_time == "00:00:00") {
 
-					date_default_timezone_set('Asia/Dhaka');
 					$datetime = date('Y-m-d H:i:s');
 
 					$emp_user_id = $this->session->emp_user_id;
@@ -603,17 +647,11 @@
 						"update_ip_address" => $this->input->ip_address(),
 					);
 
-
-
 					$date = date("Y-m-d",strtotime($datetime));
 
-					$this->load->model('CollectionModel');
 					$this->CollectionModel->end_time($data, $emp_user_id, $date);
-					$this->session->set_flashdata('message', 'Update Successfully');
 					
 					if ($data) {
-						// redirect('main/index', $data);
-						// $this->load->model('CollectionModel');
 						$employeeData = $this->CollectionModel->single_attendance_data($user_id);
 						$employee_name = $employeeData->row()->employee_name;
 						$employee_phone = $employeeData->row()->employee_phone;
@@ -643,6 +681,7 @@
 
 						// Email And SMS End
 
+						$this->session->set_flashdata('message', 'Update Successfully');
 						redirect('employee/employee_attendance');
 					}
 
@@ -654,20 +693,13 @@
 
 			}elseif ($from == 'part_time_signout') {
 				
-				date_default_timezone_set('Asia/Dhaka');
+				// date_default_timezone_set('Asia/Dhaka');
 
 				$user_id = $this->session->emp_user_id;
 				$date = date('Y-m-d');
 
-
 				$this->load->model('CollectionModel');
 				$check = $this->CollectionModel->check_part_time_attendance($user_id, $date);
-
-				// echo "<pre>";
-				// print_r($check);
-				// exit();
-
-				// echo $check->part_time_signin;exit();
 				
 				if ($check->part_time_signin != '00:00:00') {
 					$data = array(
@@ -676,16 +708,12 @@
 						"part_time_signout" => date('H:i:s'),	
 						"insert_date" => date('Y-m-d'),	
 						// "update_ip_address" => $this->input->ip_address(),
-
 					);
-
-					
 
 					$this->load->model('CollectionModel');
 					$data['start_time'] = $this->CollectionModel->part_time_signout($data);
 
 					if ($data) {
-						
 						// $this->sendMessage($employee_phone, $message);
 
 						$this->session->set_flashdata('message', 'Take a Short Break');
@@ -697,29 +725,22 @@
 				}
 
 			}elseif ($from == 'part_time_signin') {
-				
-				date_default_timezone_set('Asia/Dhaka');
+				// date_default_timezone_set('Asia/Dhaka');
 
+				$attendance_id = $this->uri->segment(4);
 				$user_id = $this->session->emp_user_id;
 				$date = date('Y-m-d');
 
-				$this->load->model('CollectionModel');
-				$check = $this->CollectionModel->check_part_time_attendance($user_id, $date);
-
-				// echo "<pre>";
-				// print_r($check);
-				// exit();
+				$check = $this->CollectionModel->check_part_time_attendance($user_id);
 
 				if ($check->part_time_signout != '00:00:00') {
 					$data = array(	
 						"part_time_signin" => date('H:i:s'),
 					);
 
-					$this->load->model('CollectionModel');
-					$data['start_time'] = $this->CollectionModel->part_time_signin($data, $user_id, $date);
+					$data['start_time'] = $this->CollectionModel->part_time_signin($attendance_id, $data, $user_id, $date);
 
 					if ($data) {
-						
 						// $this->sendMessage($employee_phone, $message);
 
 						$this->session->set_flashdata('message', 'Welcome Back');
@@ -733,7 +754,6 @@
 			}
 
 		}
-
 
 
 		public function sendMessage($phone, $message){
@@ -876,14 +896,13 @@
 		
 		
 
- 		public function auth(){
- 			if ($this->session->employee_id) {
-	 			return TRUE;
-	 		}else{
-	 			// $this->load->view('admin');
-	 			return redirect('employee/');
-	 		}
- 		}
+		public function auth(){	
+			if ($this->session->employee_id) {
+				return TRUE;
+			}else{
+				return redirect('employee');
+			}
+		}
 
 	}
 

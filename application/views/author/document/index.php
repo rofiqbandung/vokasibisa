@@ -1,7 +1,7 @@
 
 	<div id="con_1">
 		<span class="breadcrumbs"><i class="fa fa-book"></i> <?php echo $title; ?></span>
-	 	<span class="logout"> 
+		<span class="logout"> 
 			<a class="btn btn-success" href="<?php echo base_url(); ?>index.php/author/document/add/index/<?php echo $this->uri->segment(4).'/'.$this->uri->segment(5).'/'.$this->uri->segment(6); ?>"><i class="fa fa-check"></i> Add</a>
 			<a class="btn btn-info" href="javascript:void(0)" onclick="editRecord()"> <i class="fa fa-pencil-square-o"></i> Edit</a>
 			<a class="btn btn-danger" href="javascript:void(0)" onclick="deleteRecord()"> <i class="fa fa-times"></i> Delete</a>

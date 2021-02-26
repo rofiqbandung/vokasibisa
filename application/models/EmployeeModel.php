@@ -18,8 +18,8 @@
 
 
 
-		function store_employee($data){
-			
+		function store_employee($data)
+		{			
 			if($this->db->insert("employee", $data)){
 				return true;
 			}else{
@@ -57,8 +57,6 @@
 
 		function own_reports($id){
 			$reports = $this->db->where('employee_id', $id)->get('work_report');
-
-
 			return $reports;
 		}
 
@@ -233,7 +231,6 @@
 				return true;
 			else
 				return false;
-
 		}
 
 		function agree_application($app_id, $data)
