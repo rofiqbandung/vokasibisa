@@ -128,11 +128,11 @@
 							'employee_image' => $new_img,
 							'employee_designation' => $designation
 						];
-	                } else {
+					} else {
 						$error = $this->upload->display_errors();
 						$this->session->set_flashdata('message', '<div class="alert alert-danger" role="alert">'.$error.'</div>');
 						return redirect('employee/edit_profile');
-	                }
+					}
 
 				} else {
 					$data = [
@@ -396,7 +396,6 @@
 			if ($data) {
 				return redirect('employee/confirmation_leave/'.$this->session->employee_id);
 			}
-
 		}
 
 		public function disagree_application(){
@@ -417,7 +416,6 @@
 			if ($data) {
 				return redirect('employee/confirmation_leave');
 			}
-
 		}
 
 
@@ -763,14 +761,15 @@
 			$sid = "ACdccd38cc3136d6597e263597030ee720"; // Your Account SID from www.twilio.com/console
 			$token = "970bd32a87a2b81c752e53abf5b4e8bf"; // Your Auth Token from www.twilio.com/console
 
-			// $client = new Twilio\Rest\Client($sid, $token);
-			// $sms = $client->messages->create(
-					//'+8801940683100', // Text this number
-					// array(
-					// 'from' => '+14582219917', // From a valid Twilio number
-					// 'body' => $message
-				// )
-			// );
+			$client = new Twilio\Rest\Client($sid, $token);
+			$sms = $client->messages->create(
+			  '+8801940683100', // Text this number
+			  array(
+			    'from' => '+14582219917', // From a valid Twilio number
+			    'body' => $message 
+			  )
+			);
+
 			// print $message->sid;
 			// redirect('main/index');
 		}

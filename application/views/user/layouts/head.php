@@ -3,7 +3,6 @@
 <head>
   <title></title>
   <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
-  
   <link rel="icon" href="<?= base_url('assets/employee.png')?>" type="image/x-icon"/>
 
   <link rel="stylesheet" type="text/css" href="<?php echo base_url('assets/user/jquery.datetimepicker.min.css') ?>">

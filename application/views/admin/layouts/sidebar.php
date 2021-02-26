@@ -68,6 +68,13 @@
         </a>
       </li>
 
+      <li >
+        <a href="<?php echo site_url('admin/view_news'); ?>">
+          <i class="fa fa-suitcase"></i>
+          <span>Berita</span>
+        </a>
+      </li>
+
       
       
     </ul>

@@ -16,31 +16,31 @@
 
 		public function login(){
 			
-			$this->load->library('form_validation');
+			 $this->load->library('form_validation');
 
-			$this->form_validation->set_rules('email', 'Email', 'required|valid_email');
-			$this->form_validation->set_rules('password', 'Password', 'required|max_length[12]|min_length[5]');
+			 $this->form_validation->set_rules('email', 'Email', 'required|valid_email');
+			 $this->form_validation->set_rules('password', 'Password', 'required|max_length[12]|min_length[5]');
 
-			if ($this->form_validation->run()) {
-				$email = $this->input->post('email');
-				$password = md5($this->input->post('password'));
+			 if ($this->form_validation->run()) {
+			 	$email = $this->input->post('email');
+			 	$password = md5($this->input->post('password'));
 
-				$this->load->model('AdminModel');
-				$admin = $this->AdminModel->login($email, $password);
+			 	$this->load->model('AdminModel');
+			 	$admin = $this->AdminModel->login($email, $password);
 
-				if ($admin) {
-					$this->session->set_userdata('user_id', $admin->user_id);
-					$this->session->set_userdata('user_name', $admin->user_name);
+			 	if ($admin) {
+			 		$this->session->set_userdata('user_id', $admin->user_id);
+			 		$this->session->set_userdata('user_name', $admin->user_name);
 
-					return $this->dashboard();
+			 		return $this->dashboard();
 
-				}else{
-					$this->session->set_flashdata('message', 'Email or Password is not match');
-					$this->load->view('admin/index');
-				}
-			}else{
-				$this->load->view('admin/index');
-			}
+			 	}else{
+			 		$this->session->set_flashdata('message', 'Email or Password is not match');
+			 		$this->load->view('admin/index');
+			 	}
+			 }else{
+			 	$this->load->view('admin/index');
+			 }
 		}
 
 		public function logout(){
@@ -49,29 +49,29 @@
 			return redirect('admin/');
 		}
 
-		public function dashboard(){
-			$this->auth();
+	 	public function dashboard(){
+	 		$this->auth();
 
-			date_default_timezone_set('Asia/Dhaka');
-			$today = date('Y-m-d');
+	 		date_default_timezone_set('Asia/Dhaka');
+	 		$today = date('Y-m-d');
 
-			$this->load->model('CollectionModel');
-			$data['employees'] = $this->CollectionModel->today_collection_data($today);
+	 		$this->load->model('CollectionModel');
+	 		$data['employees'] = $this->CollectionModel->today_collection_data($today);
 
-			$this->load->view('admin/dashboard', $data);	
+	 		$this->load->view('admin/dashboard', $data);	
 
-		}
+	 	}
 
 
-		public function all_employee(){
-			$this->auth();
-			$this->load->model('EmployeeModel');
-			$data['employees'] = $this->EmployeeModel->all_data();
+	 	public function all_employee(){
+	 		$this->auth();
+	 		$this->load->model('EmployeeModel');
+	 		$data['employees'] = $this->EmployeeModel->all_data();
 
-			$this->load->view('admin/employee/all', $data);
-		}
+	 		$this->load->view('admin/employee/all', $data);
+	 	}
 
-		public function add_employee(){
+	 	public function add_employee(){
 			$this->auth();
 			$this->load->model('EmployeeModel');
 			$data['designations'] = $this->EmployeeModel->all_employee_designation();
@@ -100,7 +100,7 @@
 
 			if (empty($_FILES['employee_image']['name']))
 			{
-					$this->form_validation->set_rules('employee_image', 'Image', 'required');
+			    $this->form_validation->set_rules('employee_image', 'Image', 'required');
 			}
 
 
@@ -118,10 +118,10 @@
 					"employee_salary" => $this->input->post('employee_salary'),
 				);
 
-				echo "<pre>";				
+				// echo "<pre>";				
 
-					print_r($this->upload->data());
-					exit();
+				// 	print_r($this->upload->data());
+				// 	exit();
 
 				$image = $this->upload->data();
 
@@ -393,14 +393,14 @@
 
 
 		public function all_designation(){
-			 $this->auth();
-			 $this->load->model('EmployeeModel');
-			 $data['designations'] = $this->EmployeeModel->all_employee_designation();
+	 		$this->auth();
+	 		$this->load->model('EmployeeModel');
+	 		$data['designations'] = $this->EmployeeModel->all_employee_designation();
 
-			 $this->load->view('admin/designation/all', $data);
-		 }
+	 		$this->load->view('admin/designation/all', $data);
+	 	}
 
-		 public function add_designation(){
+	 	public function add_designation(){
 			$this->auth();
 			// $this->load->model('EmployeeModel');
 			// $data['designations'] = $this->EmployeeModel->employee_designation();
@@ -610,7 +610,7 @@
 						$this->session->set_flashdata('message', 'Record successfullly added.');
 						redirect('admin/all_task');	 
 					}else{
-						 $this->session->set_flashdata('message', 'Records not added. There is problem.');
+					 	$this->session->set_flashdata('message', 'Records not added. There is problem.');
 						$this->load->view('admin/task/all');
 					}
 
@@ -673,29 +673,240 @@
 		}
 		
 
+		public function view_news()
+		{
+			$dataa = $this->NewsModel->relation_table();
+				// echo "<pre>";
+				// print_r( $dataa );
+				// echo "</pre>";
+			$this->load->view('admin/layouts/header');
+			$this->load->view('admin/layouts/sidebar');
+			$this->load->view('admin/news/dashboard', array('dataa' => $dataa));
+		}
+
+		public function form_news()
+		{	
+			$this->load->model('NewsModel');
+			$data['kategori'] = $this->NewsModel->relation_category();
+
+			$this->load->view('admin/layouts/header');
+			$this->load->view('admin/layouts/sidebar');
+			$this->load->view('admin/news/form_news', $data);
+		}
+
+		public function view_category()
+		{
+			$this->load->model('CategoryNewsModel');
+			$data['kategori'] = $this->CategoryNewsModel->tampil_data();
+			$this->load->view('admin/layouts/header');
+			$this->load->view('admin/layouts/sidebar');
+			$this->load->view('admin/news/category', $data);
+		}
+
+		public function form_category()
+		{
+			$this->load->view('admin/layouts/header');
+			$this->load->view('admin/layouts/sidebar');
+			$this->load->view('admin/news/form_category');
+		}
+
+		public function add_category()
+		{
+
+			$this->load->library('form_validation');
+
+			$this->form_validation->set_rules('category_name', 'Kategori', 'required');
+
+			if ($this->form_validation->run() )
+			{
+				$data = array(
+					"category" => $this->input->post('category_name'),
+				);
+
+				$this->load->model('CategoryNewsModel');
+				$this->CategoryNewsModel->input_data($data);
+				$this->session->set_flashdata('message', 'Category Insert Successfully');
+				redirect('Admin/view_category');
+			}
+			else
+			{	
+				$this->load->view('admin/layouts/header');
+				$this->load->view('admin/layouts/sidebar');
+				$this->load->view('admin/news/form_category');
+			}
+			
+		}
+
+		public function delete_category($id)
+		{
+			$id = $this->uri->segment(3);
+			$this->load->model('CategoryNewsModel');
+			$this->CategoryNewsModel->delete_category($id);
+
+			$this->session->set_flashdata('message', 'Category Delete Successfully');
+			redirect('admin/view_category');
+		}
+
+
+		public function edit_category()
+		{
+			$id = $this->uri->segment(3);
+			
+			$this->load->model('CategoryNewsModel');
+			$data['category'] = $this->CategoryNewsModel->get_update($id);
+
+			$this->load->view('admin/layouts/header');
+			$this->load->view('admin/layouts/sidebar');
+			$this->load->view('admin/news/edit_category', $data);
+		}
+
+
+		public function update_category()
+		{
+			$id = $this->uri->segment(3);
+
+			$data = array(
+				"category" => $this->input->post('category_name'),
+			);
+
+			$this->load->model('CategoryNewsModel');
+			$this->CategoryNewsModel->update_Category($id, $data);
+
+			$this->session->set_flashdata('message', 'Category updated Successfully');
+
+			redirect('admin/view_category');
+		}
+
+
+			public function add_news(){
+			
+			$config['upload_path'] = './assets/berita';
+			$config['allowed_types'] = 'gif|jpg|png|jpeg';
+			// $config['file_name'] = "img-".random_string('alnum',8);
+
+			$this->load->library('upload', $config);
+			$this->load->library('form_validation');
+
+			$this->form_validation->set_rules('judul', 'Judul', 'required');
+			$this->form_validation->set_rules('kategori','Kategori','required');
+			$this->form_validation->set_rules('teks','Teks Berita','required');
+			$this->form_validation->set_rules('penulis','Penulis','required');
+
+			if (empty($_FILES['gambar']['name']))
+			{
+			    $this->form_validation->set_rules('gambar', 'Gambar', 'required');
+			}
+
+
+			// $this->form_validation->set_rules('employee_userid', 'User Id', 'required');
+
+			if ($this->form_validation->run() && $this->upload->do_upload('gambar')) {
+				
+				$data = array(
+					"judul" => $this->input->post('judul'),
+					"id_category" => $this->input->post('kategori'),
+					"teks_berita" => $this->input->post('teks'),
+					"penulis" => $this->input->post('penulis'),
+					
+				);
+
+				// echo "<pre>";				
+
+				// 	print_r($this->upload->data());
+				// 	exit();
+
+				$image = $this->upload->data();
+
+				$data['gambar'] = $image['file_name'];
+
+				// echo "<pre>";
+				// print_r($data);
+				// exit();
+
+				$this->load->model('NewsModel');
+				$this->NewsModel->add_news($data);
+				$this->session->set_flashdata('message', 'News Insert Successfully');
+
+				redirect('admin/view_news');
+
+			}else{
+				$this->load->view('admin/layouts/header');
+				$this->load->view('admin/layouts/sidebar');
+				$this->load->view('admin/news/form_news');
+			}
+			
+		}
+
+
+		public function delete_news($id)
+		{
+			$id = $this->uri->segment(3);
+			$this->load->model('NewsModel');
+			$this->NewsModel->trash_news($id);
+
+			$this->session->set_flashdata('message', 'News Delete Successfully');
+			redirect('admin/view_news');
+		}
+
+		
+		public function view_detail()
+		{
+			$id = $this->uri->segment(3);	
+
+			$this->load->model('NewsModel');
+			$data['berita'] = $this->NewsModel->relation_data($id);
+
+			$this->load->view('admin/layouts/header');
+			$this->load->view('admin/layouts/sidebar');
+			$this->load->view('admin/news/detail', $data);
+		}
+
+
+		public function edit_news()
+		{
+			$id = $this->uri->segment(3);
+			
+			$this->load->model('NewsModel');
+			$data['berita'] = $this->NewsModel->relation_data($id);
+			$data['kategori'] = $this->NewsModel->relation_category();
+
+			$this->load->view('admin/layouts/header');
+			$this->load->view('admin/layouts/sidebar');
+			$this->load->view('admin/news/edit', $data);
+		}
+
+
+		public function update_news()
+		{
+			$id = $this->uri->segment(3);
+
+			$data = array(
+				"judul" => $this->input->post('judul'),
+				"id_category" => $this->input->post('kategori'),
+				"teks_berita" => $this->input->post('teks'),
+				"penulis" => $this->input->post('penulis'),
+			);
+
+			$this->load->model('NewsModel');
+			$this->NewsModel->update_news($id, $data);
+
+			$this->session->set_flashdata('message', 'News updated Successfully');
+
+			redirect('admin/view_news');
+		}
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-		 public function auth(){
-			 if ($this->session->user_id) {
-				 return TRUE;
-			 }else{
-				 // $this->load->view('admin');
-				 return redirect('admin/');
-			 }
-		 }
+	 	public function auth(){
+ 			if ($this->session->user_id) {
+	 			return TRUE;
+	 		}else{
+	 			// $this->load->view('admin');
+	 			return redirect('admin/');
+	 		}
+ 		}
 
 
 	}
